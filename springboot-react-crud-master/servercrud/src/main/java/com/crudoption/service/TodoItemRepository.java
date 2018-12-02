@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 public interface TodoItemRepository extends JpaRepository<TodoItem, Long>{
 
     public TodoItem findById(Long id);
+    public TodoItem findByName(String name);
 
     //public User deleteById(String userId);
     

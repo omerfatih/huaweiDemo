@@ -11,6 +11,9 @@ import org.springframework.stereotype.Repository;
 public interface TodoListRepository extends JpaRepository<TodoList, Long>{
 
     public TodoList findById(Long id);
+    public TodoList findByName(String name);
+    public TodoList findByOwner(String owner);
+    
 
 
 }

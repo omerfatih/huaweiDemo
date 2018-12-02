@@ -12,6 +12,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.io.Console;
 import java.sql.Date;
 import java.util.stream.Stream;
+import java.util.List;
+import java.util.ArrayList;
+
 
 @SpringBootApplication
 public class ServercrudApplication implements CommandLineRunner{
@@ -28,17 +31,20 @@ public class ServercrudApplication implements CommandLineRunner{
 
     @Override
     public void run(String... strings) throws Exception {
-        
-        this.todolistrepository.save(new TodoList("TodoList","1"));
-        this.todolistrepository.save(new TodoList("TodoList","2"));
-        this.todolistrepository.save(new TodoList("TodoList","3"));
-        this.todolistrepository.save(new TodoList("TodoList","4"));
-        this.todolistrepository.save(new TodoList("TodoList","5"));
-        
-        this.todoitemrepository.save(new TodoItem("TodoItem","1","active"));
-        this.todoitemrepository.save(new TodoItem("TodoItem","2","active"));
-        this.todoitemrepository.save(new TodoItem("TodoItem","2","active"));
+        TodoItem a1 =  this.todoitemrepository.save(new TodoItem("bTodoItem","1","passive", new Date(28,1,2), null));
+        TodoItem a2 = this.todoitemrepository.save(new TodoItem("aTodoItem","2","active", new Date(28,1,1), 1L));
+        TodoItem a4 = this.todoitemrepository.save(new TodoItem("dTodoItem","2","active", new Date(28,1,1), 2L));
+        TodoItem a3 = this.todoitemrepository.save(new TodoItem("cTodoItem","2","active", new Date(28,1,4), null));
 
+        List<TodoItem> items = new ArrayList<TodoItem>();
+        items.add(a1);
+        items.add(a2);
+        items.add(a4);
 
+        List<TodoItem> items2 = new ArrayList<TodoItem>();
+        items2.add(a3);
+
+        this.todolistrepository.save(new TodoList("aTodoList","1", items));
+        this.todolistrepository.save(new TodoList("bTodoList","2", items2));
     }
 }

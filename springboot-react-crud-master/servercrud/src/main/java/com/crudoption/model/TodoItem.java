@@ -4,10 +4,14 @@ package com.crudoption.model;
 import java.sql.Date;
 
 import javax.persistence.Column;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.util.List;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
 
 @Entity
 public class TodoItem {
@@ -28,19 +32,29 @@ public class TodoItem {
     @Column(name="deadline")
     private Date deadline;
 
-    @Column(name="connectedItems")
-    private List<TodoItem>  connectedItems;
+    @CreatedDate
+    @Column(name = "created_date")
+    private Date createdDate;
+
+    private Long  connectedItemId;
     
 
 
     public TodoItem() {
     }
-
-    public TodoItem(String name, String description, String status) {
+    public TodoItem(String name, String description, String status, Date date) {
         this.name = name;
         this.description = description;
         this.status = status;
-        this.deadline = new Date(1900, 11, 11);
+        this.deadline = date;
+    }
+
+    public TodoItem(String name, String description, String status, Date date, Long connectedItemId) {
+        this.name = name;
+        this.description = description;
+        this.status = status;
+        this.deadline = date;
+        this.connectedItemId = connectedItemId;
     }
 
     public Long getId() {
@@ -83,14 +97,12 @@ public class TodoItem {
         this.deadline = deadline;
     }
 
-    public List<TodoItem> getconnectedItems() {
-        return connectedItems;
+    public Long getconnectedItemId() {
+        return connectedItemId;
     }
 
-    public void setconnectedItems(List<TodoItem>  connectedItems) {
-        this.connectedItems = connectedItems;
+    public void setconnectedItemId(Long connectedItemId) {
+        this.connectedItemId = connectedItemId;
     }
-    
-
-    
+   
 }

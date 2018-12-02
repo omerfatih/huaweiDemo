@@ -9,10 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javax.websocket.server.PathParam;
-
 
 @RestController
 public class UserController {
@@ -26,26 +24,22 @@ public class UserController {
     @GetMapping("/todo-lists")
     @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5000"})
     public ResponseEntity<List<TodoList>> todoList(){
-
         List<TodoList> todoLists = this.todoListRepository.findAll();
         return new ResponseEntity<List<TodoList>>(todoLists, HttpStatus.OK);
     }
-
     @GetMapping("/todo-items")
     @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5000"})
-    public ResponseEntity<List<TodoItem>> todoitem(@RequestBody TodoList todoList){
-
-        List<TodoItem> todoItems = todoList.getTodoItems();
-        return new ResponseEntity<List<TodoItem>>(todoItems, HttpStatus.OK);
+    public ResponseEntity<List<TodoItem>> todoItem(){
+        List<TodoItem> TodoItems = this.todoItemRepository.findAll();
+        return new ResponseEntity<List<TodoItem>>(TodoItems, HttpStatus.OK);
     }
-
-
-
 
     @PostMapping("/add-todo-list")
     @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5000"})
     public ResponseEntity<TodoList> todoListCreate(@RequestBody TodoList todoList) {
         TodoList result = null;
+        List<TodoItem> todoItems = new ArrayList<TodoItem>();
+        todoList.setTodoItems(todoItems);
         if (todoList.getOwner() != null && todoList.getName() != null) {
             result = todoListRepository.save(todoList);
         } else {
@@ -55,168 +49,90 @@ public class UserController {
 
     }
 
-    @PostMapping("/delete-todo-list")
+    @PostMapping("/add-todo-items/{todoListId}/{todoItemId}")
     @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5000"})
-    public ResponseEntity<TodoList> userDelete(@RequestBody Long todoListId) {
-        //User result = new User();
-        //System.out.println("User id bostur.");
-        TodoList todoList = todoListRepository.findById(todoListId);
-        TodoList result = todoList;
-        if ( todoList.getName() == null) {
-            System.out.println("todoList id bostur.");
+    public ResponseEntity<TodoItem> todoItemCreateWithItem(@RequestBody TodoItem todoItem, @PathVariable("todoListId") Long todoListId, @PathVariable("todoItemId") Long todoItemId) {
+        TodoList list = todoListRepository.findById(todoListId);
+        TodoItem item = null;
+        if (todoItem.getName() != null && todoItem.getDescription() != null) {
+            todoItem.setconnectedItemId(todoItemId);
+            item = todoItemRepository.save(todoItem);
+            List<TodoItem> items = list.getTodoItems();
+            items.add(item);
+            todoListRepository.save(list);
         } else {
-            todoListRepository.delete(todoList);
+            System.out.println("Todo Listsis bostur.");
         }
-        return new ResponseEntity<TodoList>(result, HttpStatus.CREATED);
+        return new ResponseEntity<TodoItem>(item, HttpStatus.CREATED);
+
     }
 
-    @PostMapping("/set-state-todo-items/{todoListId}/{todoItemId}")
+    @PostMapping("/add-todo-items/{todoListId}")
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5000"})
+    public ResponseEntity<TodoItem> todoItemCreate(@RequestBody TodoItem todoItem, @PathVariable("todoListId") Long todoListId) {
+        TodoList list = todoListRepository.findById(todoListId);
+        TodoItem item = null;
+        Long connectedItem = null;
+        if (todoItem.getName() != null && todoItem.getDescription() != null) {
+            todoItem.setconnectedItemId(connectedItem);
+            item = todoItemRepository.save(todoItem);
+            List<TodoItem> items = list.getTodoItems();
+            items.add(item);
+            todoListRepository.save(list);
+        } else {
+            System.out.println("Todo Listsis bostur.");
+        }
+        return new ResponseEntity<TodoItem>(item, HttpStatus.CREATED);
+
+    }
+
+    @PostMapping("/todo-items/state/{todoListId}/{todoItemId}")
     @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5000"})
     public ResponseEntity<TodoList> todoItemStateUpdate(@PathVariable("todoItemId") Long todoItemId, @PathVariable("todoListId") Long todoListId, @RequestBody String state) {
-        //User result = new User();
-        if ( todoItemId == null) {
-            System.out.println("User id bostur.");
-            return new ResponseEntity<TodoList>( HttpStatus.NOT_FOUND);
-        } 
-        else {
-            TodoList list = todoListRepository.findById(todoListId);
-            TodoItem item = null;
-            for(int i= 0 ; i< list.getTodoItems().size();i++)
-            {
-                item = list.getTodoItems().get(i);
-                if(item.getId() == todoItemId);
-                {
-                    if(state == "passive")
-                    {
-                        boolean notconnected = true;
-                        List<TodoItem> connectedItems = item.getconnectedItems();
-                        for(int j=0;j<connectedItems.size();j++)
-                        {
-                            TodoItem connecteditem = connectedItems.get(j);
-                            if(connecteditem.getStatus() == "active")
-                            {
-                                System.out.print("bu oge non active olamaz connected active itemi var");
-                                notconnected = false;
-                                return new ResponseEntity<TodoList>( HttpStatus.NOT_FOUND);
-                            }
+        TodoList todoList = todoListRepository.findById(todoListId);
+        TodoItem todoItem = todoItemRepository.findById(todoItemId);
+        
+        Long connectedItemId = todoItem.getconnectedItemId();
+        TodoItem connectedItem = todoItemRepository.findById(connectedItemId);
 
-                        }
-                        if(notconnected)
-                        {
-                            item.setStatus("passive");
-                            return new ResponseEntity<TodoList>( HttpStatus.CREATED);
-                        }
-                    }
-                    else{
-                        item.setStatus("active");
-                        return new ResponseEntity<TodoList>( HttpStatus.CREATED);
-                    }
-                    break;
-                }
-
-            }
-            if(item == null)
-            {
-                return new ResponseEntity<TodoList>( HttpStatus.NOT_FOUND);
-            }
-
+        if(connectedItem != null && connectedItem.getStatus().equals("active")){
+            return new ResponseEntity<TodoList>(HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<TodoList>( HttpStatus.NOT_FOUND);
+        todoItem.setStatus(state);
+        todoListRepository.save(todoList);
+        
+        return new ResponseEntity<TodoList>(todoList, HttpStatus.CREATED);
+
+       
     }
-    @PostMapping("/set-state-todo-items/{todoListId}/{todoItemId}")
+
+    @DeleteMapping("/todo-items/{todoListId}/{todoItemId}")
     @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5000"})
-    public ResponseEntity<TodoList> todoItemStateDelete(@PathVariable("todoItemId") Long todoItemId, @PathVariable("todoListId") Long todoListId) {
-        //User result = new User();
-        if ( todoItemId == null) {
-            System.out.println("User id bostur.");
-            return new ResponseEntity<TodoList>( HttpStatus.NOT_FOUND);
-        } 
-        else {
-            TodoList list = todoListRepository.findById(todoListId);
-            TodoItem item = null;
-            for(int i= 0 ; i< list.getTodoItems().size();i++)
-            {
-                item = list.getTodoItems().get(i);
-                if(item.getId() == todoItemId);
-                {
-                
-                    boolean notconnected = true;
-                    List<TodoItem> connectedItems = item.getconnectedItems();
-                    for(int j=0;j<connectedItems.size();j++)
-                    {
-                        TodoItem connecteditem = connectedItems.get(j);
-                        if(connecteditem.getStatus() == "active")
-                        {
-                            System.out.print("bu oge non active olamaz connected active itemi var");
-                            notconnected = false;
-                            return new ResponseEntity<TodoList>( HttpStatus.NOT_FOUND);
-                        }
+    public ResponseEntity<TodoList> todoItemDelete(@PathVariable("todoItemId") Long todoItemId, @PathVariable("todoListId") Long todoListId) {
+        TodoList todoList = todoListRepository.findById(todoListId);
+        TodoItem todoItem = todoItemRepository.findById(todoItemId);
+        
+        Long connectedItemId = todoItem.getconnectedItemId();
+        TodoItem connectedItem = todoItemRepository.findById(connectedItemId);
 
-                    }
-                    if(notconnected)
-                    {
-                        todoItemRepository.delete(item);
-                        return new ResponseEntity<TodoList>( HttpStatus.CREATED);
-                    }
-                
-                    break;
-                }
-
-            }
-            if(item == null)
-            {
-                return new ResponseEntity<TodoList>( HttpStatus.NOT_FOUND);
-            }
-
+        if(connectedItem != null && connectedItem.getStatus().equals("active")){
+            return new ResponseEntity<TodoList>(HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<TodoList>( HttpStatus.NOT_FOUND);
+        todoList.getTodoItems().remove(todoList.getTodoItems().indexOf(todoItem));
+        todoListRepository.save(todoList);
+        todoItemRepository.delete(todoItem);
+        return new ResponseEntity<TodoList>(todoList, HttpStatus.CREATED);
     }
 
-
-
-/*
-    @PostMapping("/add-todo-item")
+    @DeleteMapping("/todo-lists/{todoListid}")
     @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5000"})
-    public ResponseEntity<TodoList> TodoListCreate(@RequestBody TodoItem todoItem) {
-        TodoItem result = new TodoItem();
-        if (todoItem.getId() != null && todoItem.getStatus() != null) {
-            result = TodoItemRepository.save(todoItem);
-        } else {
-            System.out.println("User Listsis bostur.");
-        }
-        return new ResponseEntity<User>(result, HttpStatus.CREATED);
-
-    }
-/*
-    @PostMapping("/delete-todo-list")
-    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5000"})
-    public ResponseEntity<User> userDelete(@RequestBody Long userId) {
-        //User result = new User();
-        //System.out.println("User id bostur.");
-        User user = TodoItemRepository.findById(userId);
-        User result = user;
-        if ( user.getFirstName() == null) {
-            System.out.println("User id bostur.");
-        } else {
-            TodoItemRepository.delete(user);
-        }
-        return new ResponseEntity<User>(result, HttpStatus.CREATED);
+    public ResponseEntity<TodoList> todoListDelete(@PathVariable("todoListid") Long todoListid) {
+        TodoList todoList = todoListRepository.findById(todoListid);
+        List<TodoItem> todoItems = todoList.getTodoItems();
+        todoListRepository.delete(todoList);
+        todoItemRepository.delete(todoItems);
+        return new ResponseEntity<TodoList>(todoList, HttpStatus.CREATED);
     }
 
-    // Set status of todo item
-    @PostMapping("/todo-items/{todoListId}/{todoItemId}")
-    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5000"})
-    public ResponseEntity<User> userUpdate(@PathVariable("todoItemId") Long todoItemId, @PathVariable("todoListId") Long todoListId) {
-        //User result = new User();
-        if ( userId == null) {
-            System.out.println("User id bostur.");
-        } else {
-            User user = TodoItemRepository.findById(userId);
-            user.setStatus("b");
-            System.out.println("User update edilecek.");
-        }
-        return new ResponseEntity<User>( HttpStatus.CREATED);
-    }
-*/
 
 }

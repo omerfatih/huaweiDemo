@@ -8,8 +8,11 @@ import javax.persistence.OneToMany;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.FetchType;
 import com.crudoption.model.TodoItem;
 import java.util.List;
+
+import java.util.ArrayList;
 
 @Entity
 public class TodoList {
@@ -24,7 +27,8 @@ public class TodoList {
     @Column(name="owner")
     private String owner;
 
-    @OneToMany
+    //@OneToMany
+    @OneToMany(fetch = FetchType.EAGER)
     //@Column(name="todoItems")
     private List<TodoItem> todoItems;
     
@@ -33,9 +37,16 @@ public class TodoList {
     public TodoList() {
     }
 
+    public TodoList(String name, String owner, List<TodoItem> todoItems) {
+        this.name = name;
+        this.owner = owner;
+        this.todoItems = todoItems;
+    }
     public TodoList(String name, String owner) {
         this.name = name;
         this.owner = owner;
+        List<TodoItem> todoemptyItems = new ArrayList<TodoItem>();
+        this.todoItems = todoemptyItems;
     }
 
     public Long getId() {
