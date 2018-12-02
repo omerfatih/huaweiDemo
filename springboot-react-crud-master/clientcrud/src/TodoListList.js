@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import logo from "./logo.svg";
-import { Button, Collapse, Row, Col, Radio, Input, DatePicker, List } from "antd";
+import { Button, Collapse, Row, Col, Radio, Input, DatePicker } from "antd";
 import "./App.css";
 
 const Panel = Collapse.Panel;
@@ -80,7 +80,9 @@ class TodoListList extends Component {
         todoList = todoList.todoItems.sort((a, b) => a.name.localeCompare(b.name))
     }else if(e.target.value === "status") {
         todoList = todoList.todoItems.sort((a, b) => a.status.localeCompare(b.status))
-    }
+    }else if(e.target.value === "createdate") { todoList = todoList.todoItems.sort(function(a,b) {
+      return new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
+    })}
   }
   listbyStatus = (e,todoList) =>{
     console.log("listbyStatus/ val :"+e.target.value);
@@ -103,17 +105,12 @@ class TodoListList extends Component {
 
   // <button onClick={this.handleSubmitChangeStatus} style={{backgroundColor: `${todoList.status === "active" ? 'red': 'green'}`}}>{todoList.status === "active" ? "PASIF" : "ACTIVE"}</button>
   render() {
-    const { todoLists, isLoading, todoItems } = this.props;
+    const { todoLists, isLoading } = this.props;
     if (isLoading) {
       return <p>Loading...</p>;
     }
     console.log("lists"+todoLists);
 
-    const text = `
-  A dog is a type of domesticated animal.
-  Known for its loyalty and faithfulness,
-  it can be found as a welcome guest in many households across the world.
-`;
 
     return (
       <div className="App">
@@ -147,7 +144,7 @@ class TodoListList extends Component {
                     <div style={{margin: "20px"}}>
                     
                      <Radio.Group
-                      style={{float: "left"}}
+                      style={{float: "center"}}
 
                         defaultValue="name"
                         buttonStyle="solid"
@@ -159,9 +156,11 @@ class TodoListList extends Component {
                         <Radio.Button value="name">Order by Name</Radio.Button>
                         <Radio.Button value="order_by_exp_date">Order by Expire Date</Radio.Button>
                         <Radio.Button value="status">Order by Status</Radio.Button>
+                        <Radio.Button value="createdate">Order by Createdate</Radio.Button>
                       </Radio.Group>
                     </div>
                       <Radio.Group
+                        style={{float: "center"}}
                         defaultValue="name"
                         buttonStyle="solid"
                         onChange={e =>
@@ -169,9 +168,10 @@ class TodoListList extends Component {
                         }
                         //value={this.state.RadioValue}
                       >
-                        <Radio.Button value="name">Name</Radio.Button>
-                        <Radio.Button value="exp_date">Expire Date</Radio.Button>
-                        <Radio.Button value="status">Status</Radio.Button>
+                      
+                        <Radio.Button value="name">Find by Name</Radio.Button>
+                        <Radio.Button value="exp_date">Find by Expire Date</Radio.Button>
+                        <Radio.Button value="status">Find by Status</Radio.Button>
                       </Radio.Group>
                       {this.state.RadioValue === "name" && (
                         <Search

@@ -24,8 +24,8 @@ public class TodoList {
     @Column(name="name")
     private String name;
 
-    @Column(name="owner")
-    private String owner;
+    @Column(name="user")
+    private String user;
 
     //@OneToMany
     @OneToMany(fetch = FetchType.EAGER)
@@ -37,14 +37,14 @@ public class TodoList {
     public TodoList() {
     }
 
-    public TodoList(String name, String owner, List<TodoItem> todoItems) {
+    public TodoList(String name, String user, List<TodoItem> todoItems) {
         this.name = name;
-        this.owner = owner;
+        this.user = user;
         this.todoItems = todoItems;
     }
-    public TodoList(String name, String owner) {
+    public TodoList(String name, String user) {
         this.name = name;
-        this.owner = owner;
+        this.user = user;
         List<TodoItem> todoemptyItems = new ArrayList<TodoItem>();
         this.todoItems = todoemptyItems;
     }
@@ -65,12 +65,12 @@ public class TodoList {
         this.name = name;
     }
 
-    public String getOwner() {
-        return owner;
+    public String getuser() {
+        return user;
     }
 
-    public void setOwner(String owner) {
-        this.owner = owner;
+    public void setuser(String user) {
+        this.user = user;
     }
     public List<TodoItem> getTodoItems() {
         return todoItems;

@@ -76,9 +76,9 @@ class TodoListCreate extends Component {
     handleSubmitlist(event)
     {
         event.preventDefault();
-        console.log("handleSubmit Listowner: " + this.state.Listowner + " Listowner " + this.state.Listname )
+        console.log("handleSubmit Listuser: " + this.state.Listuser + " Listuser " + this.state.Listname )
         
-        var todoList = {owner: this.state.Listowner, name: this.state.Listname  };
+        var todoList = {user: this.state.Listuser, name: this.state.Listname  };
         this.createTodoList(todoList).then(()=>this.props.todoitemsal()).then(()=>{this.props.dsadsadsadsad()} );
 
     }
@@ -110,7 +110,7 @@ class TodoListCreate extends Component {
             TODO LIST CREATE
                 <form>
                     <div>
-                        <input type="text" placeholder="Listowner" name="Listowner"
+                        <input type="text" placeholder="Listuser" name="Listuser"
                                onChange={this.handleChange}/>
                     </div>
                     <div>

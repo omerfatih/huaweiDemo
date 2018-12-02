@@ -40,7 +40,7 @@ public class UserController {
         TodoList result = null;
         List<TodoItem> todoItems = new ArrayList<TodoItem>();
         todoList.setTodoItems(todoItems);
-        if (todoList.getOwner() != null && todoList.getName() != null) {
+        if (todoList.getuser() != null && todoList.getName() != null) {
             result = todoListRepository.save(todoList);
         } else {
             System.out.println("Todo Listsis bostur.");
