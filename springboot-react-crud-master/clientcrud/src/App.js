@@ -1,60 +1,73 @@
 import React, { Component } from 'react';
-import './App.css';
 import TodoListList from "./TodoListList";
 import TodoListCreate from "./TodoListCreate";
+import { Button, Collapse, Row, Col, Radio, Input, DatePicker } from "antd";
 
 
 class App extends Component {
     constructor(props){
         super(props)
         this.state = {
-          todolists: [],
-          isLoading : false,
-          todoItems : []
+          alltodoLists: [],
+          isLoading : true,
+          todoItems : [],
       }
     }
 
-    omerBaslat = () => {
-      console.log("omerBaslat")
+    getlists = () => {
       return fetch('http://localhost:8080/todo-lists')
       .then(response => response.json())
-      .then(data => this.setState({todolists: data, isLoading: false }))
+      .then(data => this.setState({alltodoLists: data, isLoading: false }))
     }
-    todoItemsal = () => {
-      console.log("todoItemsal")
+    gettodoItems = () => {
       return fetch('http://localhost:8080/todo-items')
       .then(response => response.json())
-      .then(data => this.setState({todoItems: data }))
+      .then(data => {
+        this.setState({todoItems: data })
+      })
     }
-
-
-    handleFilterByOnSearch = (value,todoList,i) => {
-
-     /* this.omerBaslat().then(() => {
-         const aa  = [].concat(todoList.todoItems.find((item) => item.name === value) || []);
-         todoList.todoItems = [{...aa}];
-           this.state.todolists[i] = todoList;
-           this.setState({todolists: this.state.todolists})
-           console.log(todoList)
-     });*/
-     return fetch(`http://localhost:8080/todo-lists/${todoList}`)
+    
+    handleFilter = (value,todoListId,i,column) => {
+     return value&& fetch(`http://localhost:8080/todo-items/${todoListId}/${column}/${value}`)
       .then(response => response.json())
-      .then(data => this.setState({todoItems: data, isLoading: false}))
-     
+      .then(data => {
+        const listIndex = this.state.alltodoLists.findIndex((list)=>(list.id === todoListId));
+        this.state.alltodoLists[listIndex] = data
+        this.setState({alltodoLists:  this.state.alltodoLists})
+
+      })
    }
+   
     
     componentDidMount() {
-      this.omerBaslat()
-      this.todoItemsal()
+      this.getlists()
+      this.gettodoItems()
+      this.setState({Login:  this.state.Login})
     }
 
 
   render() {
     return (
-      <div className="App">
-           <TodoListList todoLists={this.state.todolists} isLoading={this.state.isLoading} handleFilterByOnSearch={this.handleFilterByOnSearch} dsadsadsadsad={this.omerBaslat} todoItems={this.state.todoItems} todoitemsal={this.todoItemsal}/>
-           <TodoListCreate todoLists={this.state.todolists} isLoading={this.state.isLoading} handleFilterByOnSearch={this.handleFilterByOnSearch} dsadsadsadsad={this.omerBaslat} todoItems={this.state.todoItems} todoitemsal={this.todoItemsal} />
-      </div>
+       <Row style={{padding: "30px"}}>
+       <Col span={12} style={{padding: "30px"}}>
+           <TodoListCreate 
+            alltodoLists={this.state.alltodoLists}
+            isLoading={this.state.isLoading}
+            handleFilter={this.handleFilter}
+            getlist={this.getlists}
+            todoItems={this.state.todoItems} 
+            gettodoItems={this.gettodoItems}/>
+         </Col>
+          <Col span={12} style={{padding: "30px"}} >0
+            <TodoListList 
+            alltodoLists={this.state.alltodoLists} 
+            isLoading={this.state.isLoading} 
+            handleFilter={this.handleFilter} 
+            getlist={this.getlists} 
+            todoItems={this.state.todoItems} 
+            gettodoItems={this.gettodoItems}/>
+         </Col>
+          </Row>
     );
   }
 }

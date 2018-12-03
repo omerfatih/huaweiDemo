@@ -1,7 +1,10 @@
 package com.crudoption.model;
 
 
-import java.sql.Date;
+import java.util.Date;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 import javax.persistence.Column;
 import javax.persistence.OneToMany;
@@ -10,6 +13,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.util.List;
+import java.util.Calendar;
+
+import org.hibernate.type.DateType;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 
@@ -33,20 +39,26 @@ public class TodoItem {
     private Date deadline;
 
     @CreatedDate
-    @Column(name = "created_date")
     private Date createdDate;
 
     private Long  connectedItemId;
     
 
 
-    public TodoItem() {
+    public TodoItem() {       
+        Calendar cal = Calendar.getInstance();
+        Date dateNow=cal.getTime();
+        createdDate = dateNow;
     }
     public TodoItem(String name, String description, String status, Date date) {
         this.name = name;
         this.description = description;
         this.status = status;
         this.deadline = date;
+        Calendar cal = Calendar.getInstance();
+        Date dateNow=cal.getTime();
+        this.createdDate = dateNow;
+
     }
 
     public TodoItem(String name, String description, String status, Date date, Long connectedItemId) {
@@ -55,6 +67,10 @@ public class TodoItem {
         this.status = status;
         this.deadline = date;
         this.connectedItemId = connectedItemId;
+        Calendar cal = Calendar.getInstance();
+        Date dateNow=cal.getTime();
+        this.createdDate = dateNow;
+        
     }
 
     public Long getId() {
@@ -89,6 +105,13 @@ public class TodoItem {
         this.status = status;
     }
 
+    public Date getcreatedDate() {
+        return createdDate;
+    }
+
+    public void setcreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
     public Date getDeadline() {
         return deadline;
     }

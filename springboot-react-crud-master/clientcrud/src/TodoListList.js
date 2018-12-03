@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import logo from "./logo.svg";
 import { Button, Collapse, Row, Col, Radio, Input, DatePicker } from "antd";
-import "./App.css";
 
 const Panel = Collapse.Panel;
 const Search = Input.Search;
@@ -9,7 +8,7 @@ const Search = Input.Search;
 class TodoListList extends Component {
   constructor(props) {
     super(props);
-    this.state = { value: "", RadioValue: "name", statusRadioValue: "active", OrderRadioValue: "name",  setstatusRadioValue :"active"};
+    this.state = { value: "", FindRadioValue: "name", statusRadioValue: "active", OrderRadioValue: "name",  setstatusRadioValue :"active" };
   }
 
   handleSubmitDelete = (
@@ -24,7 +23,7 @@ class TodoListList extends Component {
       
       console.log(e);
       console.log(e.TodoList);
-      this.props.dsadsadsadsad();
+      this.props.getlist();
     });
   };
 
@@ -35,9 +34,9 @@ class TodoListList extends Component {
       headers: {
         "Content-Type": "application/json"
       }
-    }).then(() => {
-      this.props.dsadsadsadsad();
     });
+    this.props.getlist();
+    
   };
 
   listDelete = todoListId => {
@@ -51,25 +50,7 @@ class TodoListList extends Component {
     });
   };
 
-  handleSubmitChangeStatus = event => {
-    console.log("handleSubmitChangeStatus");
-    event.preventDefault();
-    console.log(event.target.parentNode.id);
-    this.userChangeStatus(event.target.parentNode.id).then(() => {
-      this.props.dsadsadsadsad();
-    });
-  };
-
-  userChangeStatus = UserId => {
-    console.log(JSON.stringify(UserId));
-    return fetch("http://localhost:8080/status", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(UserId)
-    });
-  };
+  
 
   handleOrderByOnChange = (e,todoList) =>{
     
@@ -95,36 +76,38 @@ class TodoListList extends Component {
     }
   }
 
-  setStateofItem = (e) =>{
-    console.log("setStateofItem/ val:"+e.target.value);
+  setStateofItem = (e, todoListId, todoItemId) =>{
+    console.log("setStateofItem/ val:",e.target.value, todoListId, todoItemId);
     this.setState({setstatusRadioValue: e.target.value})
-    
+    fetch(`http://localhost:8080/todo-items/state/${todoListId}/${todoItemId}`, {
+      method: "POST",
+      body: e.target.value
+    }).then(()=>this.props.gettodoItems()).then(()=>{
+      this.props.getlist()
+
+    });
   }
   
 
+  
+  
 
-  // <button onClick={this.handleSubmitChangeStatus} style={{backgroundColor: `${todoList.status === "active" ? 'red': 'green'}`}}>{todoList.status === "active" ? "PASIF" : "ACTIVE"}</button>
+
   render() {
-    const { todoLists, isLoading } = this.props;
+    const { alltodoLists, isLoading } = this.props;
+    
     if (isLoading) {
       return <p>Loading...</p>;
     }
-    console.log("lists"+todoLists);
-
-
     return (
       <div className="App">
-        <div className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h2>Spring Boot and React CRUD Options</h2>
-        </div>
         <div>
-          <h2>todoList List</h2>
+          <h2>Todo List</h2>
           <Row>
-            <Col span={12} offset={6}>
+            <Col span={24}>
               <Collapse>
-                {todoLists &&
-                  todoLists.map((todoList, i) => (
+                {alltodoLists &&
+                  alltodoLists.map((todoList, i) => (
                     <Panel
                       key={todoList.id}
                       header={
@@ -164,7 +147,7 @@ class TodoListList extends Component {
                         defaultValue="name"
                         buttonStyle="solid"
                         onChange={e =>
-                          this.setState({ RadioValue: e.target.value })
+                          this.setState({ FindRadioValue: e.target.value })
                         }
                         //value={this.state.RadioValue}
                       >
@@ -173,23 +156,22 @@ class TodoListList extends Component {
                         <Radio.Button value="exp_date">Find by Expire Date</Radio.Button>
                         <Radio.Button value="status">Find by Status</Radio.Button>
                       </Radio.Group>
-                      {this.state.RadioValue === "name" && (
+                      {this.state.FindRadioValue === "name" && (
                         <Search
                           placeholder="input search text"
-                          onSearch={value => this.props.handleFilterByOnSearch(value,todoList, i)}
+                          onSearch={value => this.props.handleFilter(value,todoList.id, i,this.state.FindRadioValue)}
                           enterButton
                         />
                       )}
-                      {this.state.RadioValue === "status" && (
+                      {this.state.FindRadioValue === "status" && (
                         <div>
                           <Radio.Group
-                            defaultValue="passive"
+                           
                             buttonStyle="solid"
-                            onChange={e =>
-                              
-                              this.listbyStatus(e,todoList)
-                              
-                            }
+                            onChange={e => {
+                              this.props.handleFilter(e.target.value,todoList.id, i,this.state.FindRadioValue)
+                              this.setState({statusRadioValue: e.target.value})
+                            }}
                             value={this.state.statusRadioValue}
                           >
                             <Radio.Button value="active">active</Radio.Button>
@@ -197,15 +179,19 @@ class TodoListList extends Component {
                           </Radio.Group>
                         </div>
                       )}
-                      {this.state.RadioValue === "exp_date" && (
+                      {this.state.FindRadioValue === "exp_date" && (
                         <div>
                           <DatePicker
                             onChange={(date, dateString) =>
-                              console.log(date, dateString)
+                              this.props.handleFilter(dateString,todoList.id, i,this.state.FindRadioValue)
                             }
                           />
                         </div>
                       )}
+                      <Button
+                        onClick={this.props.getlist}>
+                          Reset
+                      </Button>
                       <Collapse>
                         {todoList.todoItems.map((item, i) => (
                           <Panel
@@ -227,44 +213,44 @@ class TodoListList extends Component {
                                 </Button>
                                 {item.status === "active" && (
                                 <div>
-                                   set state: 
+                                  set state: 
+                                  {console.log(item.id+"active")}
                                   <Radio.Group
                                     defaultValue="active"
                                     buttonStyle="solid"
                                     onChange={e =>
-                                      this.setStateofItem(e)
+                                      this.setStateofItem(e, todoList.id, item.id)
                                     }
-                                    //value={this.state.setstatusRadioValue}
                                   >
                                     <Radio.Button value="active"disabled>active</Radio.Button>
                                     <Radio.Button value="passive">passive</Radio.Button>
                                   </Radio.Group>
                                 </div>
                                 
-                              )}
-                              {item.status === "passive" && (
-                                <div>
-                                  set state:
-                                  <Radio.Group
-                                    defaultValue="passive"
-                                    buttonStyle="solid"
-                                    onChange={e =>
-                                      this.setStateofItem(e)
-                                    }
-                                    //value={this.state.setstatusRadioValue}
-                                  >
-                                    <Radio.Button value="active">active</Radio.Button>
-                                    <Radio.Button value="passive"disabled>passive</Radio.Button>
-                                  </Radio.Group>
-                                </div>
-                              )}
+                                )}
+                                {item.status === "passive" && (
+                                  <div>
+                                    set state:
+                                    {console.log(item.id+"passive")}
+                                    <Radio.Group
+                                      defaultValue="passive"
+                                      buttonStyle="solid"
+                                      onChange={e =>
+                                        this.setStateofItem(e, todoList.id, item.id)
+                                      }
+                                    >
+                                      <Radio.Button value="active">active</Radio.Button>
+                                      <Radio.Button value="passive"disabled>passive</Radio.Button>
+                                    </Radio.Group>
+                                  </div>
+                                )}
                               </div>
                             }
                             key={i}
                           >
                             {item.description}
-                            {item.deadline}
-                            {item.status}
+                            <div>Createdate :{item.createdDate}</div>
+                            <div>DeadLine :{item.deadline}</div>
                           </Panel>
                         ))}
                       </Collapse>

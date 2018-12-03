@@ -12,7 +12,7 @@ public interface TodoListRepository extends JpaRepository<TodoList, Long>{
 
     public TodoList findById(Long id);
     public TodoList findByName(String name);
-    public TodoList findByuser(String user);
+    public List<TodoList> findByUserId(Long UserId);
     
 
 

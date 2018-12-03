@@ -24,12 +24,10 @@ public class TodoList {
     @Column(name="name")
     private String name;
 
-    @Column(name="user")
-    private String user;
+    @Column(name="userId")
+    private Long userId;
 
-    //@OneToMany
     @OneToMany(fetch = FetchType.EAGER)
-    //@Column(name="todoItems")
     private List<TodoItem> todoItems;
     
 
@@ -37,14 +35,14 @@ public class TodoList {
     public TodoList() {
     }
 
-    public TodoList(String name, String user, List<TodoItem> todoItems) {
+    public TodoList(String name, Long userId, List<TodoItem> todoItems) {
         this.name = name;
-        this.user = user;
+        this.userId = userId;
         this.todoItems = todoItems;
     }
-    public TodoList(String name, String user) {
+    public TodoList(String name, Long user) {
         this.name = name;
-        this.user = user;
+        this.userId = user;
         List<TodoItem> todoemptyItems = new ArrayList<TodoItem>();
         this.todoItems = todoemptyItems;
     }
@@ -65,12 +63,12 @@ public class TodoList {
         this.name = name;
     }
 
-    public String getuser() {
-        return user;
+    public Long getuserId() {
+        return userId;
     }
 
-    public void setuser(String user) {
-        this.user = user;
+    public void setuserId(Long user) {
+        this.userId = user;
     }
     public List<TodoItem> getTodoItems() {
         return todoItems;
